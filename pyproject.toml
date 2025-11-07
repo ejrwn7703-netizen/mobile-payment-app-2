@@ -1,0 +1,25 @@
+[tool]
+name = "mobile-payment-app"
+version = "0.1.0"
+description = "A mobile payment application"
+authors = ["서덕주 <your_email@example.com>"]
+license = "MIT"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[project]
+dependencies = [
+    "flask",  # or "fastapi" depending on your choice of web framework
+    "requests",
+    "pydantic",
+    "sqlalchemy"
+]
+
+[tool.poetry]
+name = "mobile-payment-app"
+version = "0.1.0"
+description = "A mobile payment application"
+authors = ["서덕주 <your_email@example.com>"]
+license = "MIT"
