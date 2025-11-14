@@ -1,23 +1,37 @@
 {
     "version": "0.2.0",
     "configurations": [
-        
-
         {
-            "name": "Python: Flask",
+            "name": "Flask: Run (module)",
             "type": "python",
             "request": "launch",
             "module": "flask",
-            "env": {
-                "FLASK_APP": "app.py",
-                "FLASK_ENV": "development"
-            },
             "args": [
                 "run",
                 "--no-debugger",
                 "--no-reload"
             ],
-            "jinja": true
+            "env": {
+                "FLASK_APP": "src.mobile_payment_app.app"
+            },
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "FastAPI (uvicorn) - Run (module)",
+            "type": "python",
+            "request": "launch",
+            "module": "uvicorn",
+            "args": [
+                "src.fastapi_app:app",
+                "--reload",
+                "--host",
+                "127.0.0.1",
+                "--port",
+                "8000"
+            ],
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal"
         }
     ]
 }

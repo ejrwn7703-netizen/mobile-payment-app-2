@@ -1,9 +1,8 @@
-# ...existing code...
-Flask  # 터미널에서 flask실행 : python src\mobile_payment_app\app.py
-requests   
+Flask
+requests
 pytest
 pydantic
 fastapi
 uvicorn
-# ...existing code...
+
 
