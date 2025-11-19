@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="ko">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>결제 완료</title>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            max-width: 700px;
+            margin: 40px auto
+        }
+    </style>
+</head>
+
+<body>
+    <h1>결제 완료</h1>
+    <p id="msg">결제 처리가 진행 중입니다...</p>
+
+    <script>
+        // Parse query string for payment_id and token
+        function qs() {
+            const s = location.search.replace(/^\?/, '');
+            return s.split('&').filter(Boolean).reduce((acc, kv) => { const [k, v] = kv.split('='); acc[decodeURIComponent(k)] = decodeURIComponent(v); return acc }, {});
+        }
+
+        (async function () {
+            const q = qs();
+            const pid = q.payment_id;
+            if (!pid) {
+                document.getElementById('msg').textContent = '결제 ID를 찾을 수 없습니다.';
+                return;
+            }
+
+            // Simulate provider calling our server webhook by POSTing to /api/payments/callback
+            try {
+                const res = await fetch('/api/payments/callback', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ payment_id: pid, status: 'completed' })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    document.getElementById('msg').textContent = '결제가 완료되었습니다. (서버에 콜백이 전달됨)';
+                } else {
+                    document.getElementById('msg').textContent = '서버 콜백 처리 실패: ' + JSON.stringify(data);
+                }
+            } catch (err) {
+                document.getElementById('msg').textContent = '콜백 전송 중 오류: ' + err.message;
+            }
+        })();
+    </script>
+</body>
+
+</html>

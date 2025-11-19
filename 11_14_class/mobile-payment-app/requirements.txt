@@ -1,0 +1,10 @@
+Flask==2.2.2
+Flask-RESTful==0.3.9
+Flask-Cors==3.0.10
+pyqrcode==1.2.1
+pillow==9.0.1
+requests==2.26.0
+geopy==2.2.0
+opencv-python==4.5.3.20210927
+pytest==6.2.5
+pytest-flask==1.2.0

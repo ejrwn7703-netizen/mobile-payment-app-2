@@ -1,0 +1,12 @@
+{
+  "mock-be72ea4c069144e4a02831e52f3c38fb": {
+    "payment_id": "mock-be72ea4c069144e4a02831e52f3c38fb",
+    "amount": 100,
+    "currency": "KRW",
+    "method": "naverpay",
+    "order_id": null,
+    "status": "completed",
+    "redirect_url": "http://127.0.0.1:8000/payments/complete?payment_id=mock-be72ea4c069144e4a02831e52f3c38fb&token=a352abcf93b2421d9b4ef361ae23afb6",
+    "token": "a352abcf93b2421d9b4ef361ae23afb6"
+  }
+}

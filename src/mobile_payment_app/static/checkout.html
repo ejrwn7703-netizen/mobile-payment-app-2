@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="ko">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>결제 데모 - NaverPay Mock</title>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            max-width: 700px;
+            margin: 40px auto;
+        }
+
+        label {
+            display: block;
+            margin-top: 12px
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box
+        }
+
+        button {
+            margin-top: 16px;
+            padding: 10px 16px;
+            font-size: 16px
+        }
+
+        .note {
+            margin-top: 12px;
+            color: #666
+        }
+    </style>
+</head>
+
+<body>
+    <h1>네이버페이 모의 결제</h1>
+
+    <label>주문 ID (선택)
+        <input id="order_id" placeholder="order-123" />
+    </label>
+
+    <label>금액
+        <input id="amount" type="number" value="1000" />
+    </label>
+
+    <label>통화
+        <select id="currency">
+            <option value="KRW">KRW</option>
+            <option value="USD">USD</option>
+        </select>
+    </label>
+
+    <label>결제 수단
+        <select id="payment_method">
+            <option value="naverpay">naverpay</option>
+            <option value="card">card</option>
+        </select>
+    </label>
+
+    <button id="payBtn">결제 시작</button>
+
+    <p class="note">버튼을 누르면 서버의 <code>/api/payments</code> 엔드포인트로 요청을 보내고, 반환된 <em>redirect_url</em>로 이동합니다 (모의 동작).</p>
+
+    <script>
+        document.getElementById('payBtn').addEventListener('click', async function () {
+            const order_id = document.getElementById('order_id').value || undefined;
+            const amount = Number(document.getElementById('amount').value) || 0;
+            const currency = document.getElementById('currency').value;
+            const payment_method = document.getElementById('payment_method').value;
+
+            const payload = { amount, currency, payment_method };
+            if (order_id) payload.order_id = order_id;
+
+            try {
+                const res = await fetch('/api/payments', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (!res.ok) {
+                    alert('결제 생성 실패: ' + JSON.stringify(data));
+                    return;
+                }
+                // 서버가 반환한 리다이렉트 URL로 이동
+                if (data.redirect_url) {
+                    window.location.href = data.redirect_url;
+                } else {
+                    alert('결제 생성됨: ' + JSON.stringify(data));
+                }
+            } catch (err) {
+                alert('요청 중 오류: ' + err.message);
+            }
+        });
+    </script>
+</body>
+
+</html>
