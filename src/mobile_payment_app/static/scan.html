@@ -1,0 +1,784 @@
+<!doctype html>
+<html lang="ko">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>바코드 스캔 - 무인계산앱</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .content {
+            padding: 30px 20px;
+        }
+
+        .scan-section {
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+
+        input {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .result-card {
+            display: none;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            border-left: 4px solid #667eea;
+        }
+
+        .result-card.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+
+        .result-card.error {
+            border-left-color: #dc3545;
+            background: #fee;
+        }
+
+        .result-card.error small {
+            display: block;
+            margin-top: 8px;
+            opacity: 0.9;
+        }
+
+        .result-card.success {
+            border-left-color: #28a745;
+            background: #e7f9ed;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .product-info {
+            display: grid;
+            gap: 12px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #666;
+        }
+
+        .info-value {
+            color: #333;
+            font-weight: 500;
+        }
+
+        .price {
+            font-size: 24px;
+            color: #667eea;
+            font-weight: 700;
+        }
+
+        .cart-section {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 2px solid #e0e0e0;
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        .cart-item-info {
+            flex: 1;
+        }
+
+        .cart-item-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .cart-item-price {
+            color: #667eea;
+            font-weight: 500;
+        }
+
+        .cart-item-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .qty-btn {
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: 50%;
+            background: #667eea;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .qty-btn:hover {
+            background: #5568d3;
+            transform: scale(1.1);
+        }
+
+        .qty-display {
+            min-width: 30px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .cart-total {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .cart-total-label {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .cart-total-amount {
+            font-size: 32px;
+            font-weight: 700;
+        }
+
+        .empty-cart {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+
+        #reader {
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .mode-switch {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .mode-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            background: white;
+            color: #667eea;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .mode-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .mode-btn:hover:not(.active) {
+            background: #f0f0f0;
+        }
+
+        .camera-section {
+            display: none;
+        }
+
+        .camera-section.active {
+            display: block;
+        }
+
+        .manual-section {
+            display: none;
+        }
+
+        .manual-section.active {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛒 바코드 스캔</h1>
+            <p>바코드를 스캔하여 상품을 장바구니에 담으세요</p>
+        </div>
+
+        <div class="content">
+            <div class="scan-section">
+                <!-- 모드 선택 버튼 -->
+                <div class="mode-switch">
+                    <button class="mode-btn active" onclick="switchMode('camera')">
+                        📷 카메라 스캔
+                    </button>
+                    <button class="mode-btn" onclick="switchMode('manual')">
+                        ⌨️ 수동 입력
+                    </button>
+                </div>
+
+                <!-- 카메라 스캔 섹션 -->
+                <div id="cameraSection" class="camera-section active">
+                    <div
+                        style="margin-bottom: 10px; padding: 10px; background: #fff3cd; border-radius: 8px; font-size: 13px; color: #856404;">
+                        💡 카메라 권한을 허용해주세요. 바코드를 카메라에 비추면 자동으로 인식됩니다.
+                    </div>
+                    <div id="reader"></div>
+                    <button class="btn btn-secondary" onclick="stopCamera()">
+                        ⏹️ 카메라 중지
+                    </button>
+                </div>
+
+                <!-- 수동 입력 섹션 -->
+                <div id="manualSection" class="manual-section">
+                    <div class="input-group">
+                        <label for="barcode">바코드 번호 (8-13자리)</label>
+                        <input type="text" id="barcode" placeholder="8801234567890" pattern="[0-9]*"
+                            inputmode="numeric" />
+                    </div>
+
+                    <button class="btn btn-primary" onclick="scanBarcode()">
+                        🔍 스캔하기
+                    </button>
+
+                    <button class="btn btn-secondary" onclick="showSamples()">
+                        💡 샘플 바코드 보기
+                    </button>
+                </div>
+
+                <div id="scanResult" class="result-card"></div>
+            </div>
+
+            <div class="cart-section">
+                <h2 style="margin-bottom: 20px; color: #333;">🛍️ 장바구니</h2>
+                <div id="cartItems"></div>
+                <div id="cartTotal"></div>
+                <button class="btn btn-primary" onclick="goToCheckout()" style="margin-top: 20px;">
+                    💳 결제하기
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- html5-qrcode 라이브러리 -->
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
+    <script>
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+        let html5QrCode = null;
+        let isScanning = false;
+        let currentMode = 'camera';
+
+        // 페이지 로드 시 장바구니 표시 및 카메라 시작
+        updateCartDisplay();
+
+        // 페이지 로드 후 카메라 시작 (약간의 지연)
+        setTimeout(() => {
+            if (currentMode === 'camera') {
+                startCamera();
+            }
+        }, 500);
+
+        // Enter 키로 스캔 (수동 입력 모드)
+        document.getElementById('barcode').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                scanBarcode();
+            }
+        });
+
+        // 모드 전환
+        function switchMode(mode) {
+            currentMode = mode;
+
+            // 버튼 스타일 변경
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // 클릭된 버튼에 active 추가
+            if (mode === 'camera') {
+                document.querySelectorAll('.mode-btn')[0].classList.add('active');
+            } else {
+                document.querySelectorAll('.mode-btn')[1].classList.add('active');
+            }
+
+            // 섹션 표시/숨김
+            if (mode === 'camera') {
+                document.getElementById('cameraSection').classList.add('active');
+                document.getElementById('manualSection').classList.remove('active');
+                startCamera();
+            } else {
+                document.getElementById('cameraSection').classList.remove('active');
+                document.getElementById('manualSection').classList.add('active');
+                stopCamera();
+                document.getElementById('barcode').focus();
+            }
+        }
+
+        // 카메라 시작
+        async function startCamera() {
+            if (isScanning) {
+                console.log("카메라가 이미 실행 중입니다.");
+                return;
+            }
+
+            try {
+                // 기존 인스턴스가 있으면 정리
+                if (html5QrCode) {
+                    try {
+                        await html5QrCode.stop();
+                    } catch (e) {
+                        console.log("기존 카메라 중지 중 에러 무시:", e);
+                    }
+                    html5QrCode = null;
+                }
+
+                html5QrCode = new Html5Qrcode("reader");
+
+                const config = {
+                    fps: 10,
+                    qrbox: { width: 250, height: 250 },
+                    aspectRatio: 1.0,
+                    formatsToSupport: [
+                        Html5QrcodeSupportedFormats.EAN_13,
+                        Html5QrcodeSupportedFormats.EAN_8,
+                        Html5QrcodeSupportedFormats.CODE_128,
+                        Html5QrcodeSupportedFormats.QR_CODE
+                    ]
+                };
+
+                // 먼저 사용 가능한 카메라 목록 확인
+                const cameras = await Html5Qrcode.getCameras();
+
+                if (!cameras || cameras.length === 0) {
+                    throw new Error("사용 가능한 카메라가 없습니다.");
+                }
+
+                console.log(`${cameras.length}개의 카메라 발견:`, cameras);
+
+                // 카메라 시작 시도
+                let cameraStarted = false;
+                let lastError = null;
+
+                // 방법 1: 환경 카메라 (후면 카메라)
+                if (!cameraStarted) {
+                    try {
+                        await html5QrCode.start(
+                            { facingMode: "environment" },
+                            config,
+                            onScanSuccess,
+                            onScanError
+                        );
+                        cameraStarted = true;
+                        console.log("환경 카메라(후면) 시작 성공");
+                    } catch (err) {
+                        lastError = err;
+                        console.log("환경 카메라 실패, 다음 시도...");
+                    }
+                }
+
+                // 방법 2: 사용자 카메라 (전면 카메라)
+                if (!cameraStarted) {
+                    try {
+                        await html5QrCode.start(
+                            { facingMode: "user" },
+                            config,
+                            onScanSuccess,
+                            onScanError
+                        );
+                        cameraStarted = true;
+                        console.log("사용자 카메라(전면) 시작 성공");
+                    } catch (err) {
+                        lastError = err;
+                        console.log("사용자 카메라 실패, 다음 시도...");
+                    }
+                }
+
+                // 방법 3: 첫 번째 카메라 ID 사용
+                if (!cameraStarted && cameras.length > 0) {
+                    try {
+                        await html5QrCode.start(
+                            cameras[0].id,
+                            config,
+                            onScanSuccess,
+                            onScanError
+                        );
+                        cameraStarted = true;
+                        console.log("첫 번째 카메라로 시작 성공");
+                    } catch (err) {
+                        lastError = err;
+                        console.log("첫 번째 카메라 실패");
+                    }
+                }
+
+                if (cameraStarted) {
+                    isScanning = true;
+                    showResult('success', '카메라가 시작되었습니다. 바코드를 비춰주세요.');
+                } else {
+                    throw lastError || new Error("모든 카메라 시작 시도 실패");
+                }
+
+            } catch (err) {
+                console.error("카메라 시작 실패:", err);
+                isScanning = false;
+                html5QrCode = null;
+
+                let errorMsg = '카메라를 시작할 수 없습니다. ';
+                let errorDetail = '';
+
+                if (err.name === 'NotAllowedError' || err.message?.includes('Permission')) {
+                    errorMsg = '❌ 카메라 권한이 거부되었습니다.';
+                    errorDetail = '브라우저 주소창의 카메라 아이콘을 클릭하여 권한을 허용해주세요.';
+                } else if (err.name === 'NotFoundError') {
+                    errorMsg = '❌ 카메라를 찾을 수 없습니다.';
+                    errorDetail = '카메라가 연결되어 있는지 확인해주세요.';
+                } else if (err.name === 'NotReadableError' || err.message?.includes('in use')) {
+                    errorMsg = '❌ 카메라가 사용 중입니다.';
+                    errorDetail = '다른 앱(Zoom, Teams, Skype 등)에서 카메라를 사용 중일 수 있습니다. 해당 앱을 종료하고 다시 시도하거나, 수동 입력 모드를 사용해주세요.';
+                } else {
+                    errorMsg = '❌ 카메라 오류가 발생했습니다.';
+                    errorDetail = '수동 입력 모드를 사용해주세요.';
+                }
+
+                showResult('error', errorMsg + '<br><small style="font-size: 12px;">' + errorDetail + '</small>');
+
+                // 2초 후 자동으로 수동 입력 모드로 전환
+                setTimeout(() => {
+                    currentMode = 'manual';
+                    document.getElementById('cameraSection').classList.remove('active');
+                    document.getElementById('manualSection').classList.add('active');
+                    document.querySelectorAll('.mode-btn')[0].classList.remove('active');
+                    document.querySelectorAll('.mode-btn')[1].classList.add('active');
+                    document.getElementById('barcode').focus();
+                }, 3000);
+            }
+        }
+
+        // 카메라 중지
+        async function stopCamera() {
+            if (html5QrCode && isScanning) {
+                try {
+                    await html5QrCode.stop();
+                    isScanning = false;
+                    html5QrCode = null;
+                    console.log("카메라 중지 성공");
+                } catch (err) {
+                    console.error("카메라 중지 실패:", err);
+                    // 강제로 상태 초기화
+                    isScanning = false;
+                    html5QrCode = null;
+                }
+            }
+        }
+
+        // 스캔 성공 콜백
+        async function onScanSuccess(decodedText, decodedResult) {
+            console.log("바코드 스캔 성공:", decodedText);
+
+            // 중복 스캔 방지 (1초 쿨타임)
+            if (!window.lastScanTime || Date.now() - window.lastScanTime > 1000) {
+                window.lastScanTime = Date.now();
+                await processBarcode(decodedText);
+            }
+        }
+
+        // 스캔 에러 콜백 (무시)
+        function onScanError(errorMessage) {
+            // 에러는 무시 (지속적으로 스캔 시도)
+        }
+
+        // 바코드 처리 (카메라/수동 입력 공통)
+        async function processBarcode(barcode) {
+            barcode = barcode.trim();
+
+            if (!barcode) {
+                showResult('error', '바코드를 입력해주세요.');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/scan', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ barcode })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    addToCart(data.product);
+                    showProductInfo(data.product);
+
+                    // 수동 입력 모드일 경우 입력 필드 초기화
+                    if (currentMode === 'manual') {
+                        document.getElementById('barcode').value = '';
+                        document.getElementById('barcode').focus();
+                    }
+                } else {
+                    showResult('error', data.message || '상품을 찾을 수 없습니다.');
+                }
+            } catch (error) {
+                showResult('error', '스캔 중 오류가 발생했습니다: ' + error.message);
+            }
+        }
+
+        // 수동 입력 스캔 (기존 함수)
+        async function scanBarcode() {
+            const barcode = document.getElementById('barcode').value;
+            await processBarcode(barcode);
+        }
+
+        function showProductInfo(product) {
+            const resultDiv = document.getElementById('scanResult');
+            resultDiv.className = 'result-card success show';
+            resultDiv.innerHTML = `
+                <h3 style="margin-bottom: 15px; color: #28a745;">✅ 상품 스캔 성공!</h3>
+                <div class="product-info">
+                    <div class="info-row">
+                        <span class="info-label">상품명</span>
+                        <span class="info-value">${product.name}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">가격</span>
+                        <span class="price">${product.price.toLocaleString()}원</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">카테고리</span>
+                        <span class="info-value">${product.category}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">재고</span>
+                        <span class="info-value">${product.stock}개</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        function showResult(type, message) {
+            const resultDiv = document.getElementById('scanResult');
+            resultDiv.className = `result-card ${type} show`;
+            resultDiv.innerHTML = `
+                <strong>${type === 'error' ? '❌' : '✅'} ${message}</strong>
+            `;
+        }
+
+        function addToCart(product) {
+            const existingItem = cart.find(item => item.barcode === product.barcode);
+
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({
+                    ...product,
+                    quantity: 1
+                });
+            }
+
+            saveCart();
+            updateCartDisplay();
+        }
+
+        function updateQuantity(barcode, delta) {
+            const item = cart.find(i => i.barcode === barcode);
+            if (item) {
+                item.quantity += delta;
+                if (item.quantity <= 0) {
+                    cart = cart.filter(i => i.barcode !== barcode);
+                }
+                saveCart();
+                updateCartDisplay();
+            }
+        }
+
+        function saveCart() {
+            localStorage.setItem('cart', JSON.stringify(cart));
+        }
+
+        function updateCartDisplay() {
+            const cartItemsDiv = document.getElementById('cartItems');
+            const cartTotalDiv = document.getElementById('cartTotal');
+
+            if (cart.length === 0) {
+                cartItemsDiv.innerHTML = '<div class="empty-cart">🛒 장바구니가 비어있습니다</div>';
+                cartTotalDiv.innerHTML = '';
+                return;
+            }
+
+            cartItemsDiv.innerHTML = cart.map(item => `
+                <div class="cart-item">
+                    <div class="cart-item-info">
+                        <div class="cart-item-name">${item.name}</div>
+                        <div class="cart-item-price">${item.price.toLocaleString()}원</div>
+                    </div>
+                    <div class="cart-item-actions">
+                        <button class="qty-btn" onclick="updateQuantity('${item.barcode}', -1)">-</button>
+                        <span class="qty-display">${item.quantity}</span>
+                        <button class="qty-btn" onclick="updateQuantity('${item.barcode}', 1)">+</button>
+                    </div>
+                </div>
+            `).join('');
+
+            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+            cartTotalDiv.innerHTML = `
+                <div class="cart-total">
+                    <div class="cart-total-label">총 결제금액</div>
+                    <div class="cart-total-amount">${total.toLocaleString()}원</div>
+                    <div style="margin-top: 10px; font-size: 14px; opacity: 0.9;">
+                        (${cart.length}개 상품, 총 ${cart.reduce((sum, i) => sum + i.quantity, 0)}개)
+                    </div>
+                </div>
+            `;
+        }
+
+        function goToCheckout() {
+            if (cart.length === 0) {
+                alert('장바구니에 상품을 담아주세요.');
+                return;
+            }
+
+            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+            // 결제 페이지로 이동 (checkout.html에 장바구니 정보 전달)
+            window.location.href = `/checkout?amount=${total}&items=${cart.length}`;
+        }
+
+        function showSamples() {
+            alert('샘플 바코드:\n\n' +
+                '8801234567890 - 삼다수 2L (1,500원)\n' +
+                '8809012345678 - 신라면 5개입 (4,500원)\n' +
+                '8801099876543 - 서울우유 1L (3,200원)\n' +
+                '8802345678901 - 허니버터칩 (2,500원)');
+        }
+
+        // 페이지 종료 시 카메라 정리
+        window.addEventListener('beforeunload', () => {
+            stopCamera();
+        });
+    </script>
+</body>
+
+</html>

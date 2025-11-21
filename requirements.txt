@@ -4,5 +4,8 @@ pytest
 pydantic
 fastapi
 uvicorn
+python-dotenv
+cryptography
+PyJWT
 
 

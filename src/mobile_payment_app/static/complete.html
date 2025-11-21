@@ -49,6 +49,11 @@
             } catch (err) {
                 document.getElementById('msg').textContent = '콜백 전송 중 오류: ' + err.message;
             }
+
+            // 3초 후 스캔 페이지로 자동 이동
+            setTimeout(() => {
+                window.location.href = '/scan';
+            }, 3000);
         })();
     </script>
 </body>
